@@ -1,0 +1,113 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Prospect {
+    @@map(name: "prospects")
+    id Int @default(autoincrement()) @id
+    name String
+    email String? @unique
+    phone_number String @unique
+    address String?
+    employees EmployeeProspect[]
+    interactions ProspectInteraction[]
+}
+
+model Customer {
+    @@map(name: "customers")
+    id Int @default(autoincrement()) @id
+    name String
+    email String @unique
+    phone_number String? @unique
+    address String?
+    employees EmployeeCustomer[]
+    interactions CustomerInteraction[]
+    services CustomerService[]
+}
+
+model Employee {
+    @@map(name: "employees")
+    id Int @default(autoincrement()) @id
+    name String
+    email String @unique
+    phone_number String @unique
+    password String
+    department_id Int
+    department Department @relation(fields: [department_id], references: [id])
+    prospects EmployeeProspect[]
+    customers EmployeeCustomer[]
+    prospect_interactions ProspectInteraction[]
+    customer_interactions CustomerInteraction[]
+}
+
+model Department {
+    @@map(name: "departments")
+    id Int @default(autoincrement()) @id
+    name String
+    employees Employee[]
+}
+
+model Service {
+    @@map(name: "services")
+    id Int @default(autoincrement()) @id
+    name String
+    customers CustomerService[]
+}
+
+model EmployeeProspect {
+    @@map(name: "employee_prospects")
+    id Int @default(autoincrement()) @id
+    employee_id Int
+    prospect_id Int
+    employee Employee @relation(fields: [employee_id], references: [id])
+    prospect Prospect @relation(fields: [prospect_id], references: [id])
+}
+
+model EmployeeCustomer {
+    @@map(name: "employee_customers")
+    id Int @default(autoincrement()) @id
+    employee_id Int
+    prospect_id Int
+    customer_id Int
+    employee Employee @relation(fields: [employee_id], references: [id])
+    customer Customer @relation(fields: [customer_id], references: [id])
+}
+
+model ProspectInteraction {
+    @@map(name: "prospect_interactions")
+    id Int @default(autoincrement()) @id
+    employee_id Int
+    prospect_id Int
+    employee Employee @relation(fields: [employee_id], references: [id])
+    prospect Prospect @relation(fields: [prospect_id], references: [id])
+    summary String @db.Text
+}
+
+model CustomerInteraction {
+    @@map(name: "customer_interactions")
+    id Int @default(autoincrement()) @id
+    employee_id Int
+    customer_id Int
+    employee Employee @relation(fields: [employee_id], references: [id])
+    customer Customer @relation(fields: [customer_id], references: [id])
+    summary String @db.Text
+}
+
+model CustomerService {
+    @@map(name: "customer_services")
+    id Int @default(autoincrement()) @id
+    service_id Int
+    customer_id Int
+    service Service @relation(fields: [service_id], references: [id])
+    customer Customer @relation(fields: [customer_id], references: [id])
+    summary String @db.Text
+}
+
