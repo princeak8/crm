@@ -1,9 +1,10 @@
 import { Request, Response, NextFunction } from "express";
 import logger from "../utils/log";
+const jwt =  require("../utils/jwt");
 import ProspectService from "../services/prospectService";
 
 import SaveProspectValidation from "../validations/SaveProspect";
-import ProspectResource from "../resources/ProspectResource";
+import { ProspectResource } from "../resources";
 
 const prospectService = new ProspectService;
 
@@ -15,8 +16,12 @@ class ProspectController {
             if(!error) {
                 let exists = await prospectService.EmailOrPhoneNumberExists(req.body.phone_number, req.body?.email);
                 if(!exists) {
-                    let prospect = await prospectService.save(req.body)
-                    prospect = ProspectResource.single(prospect);
+                    // console.log('success');
+                    const { payload: {payload: user, exp} } = await jwt.user(req);
+                    // console.log(user);
+                    // console.log("expiry:", exp);
+                    let prospect = await prospectService.save(req.body, user.id)
+                    prospect = new ProspectResource(prospect).data;
                     res.json({ prospect });
                 }else{
                     res.status(400)
