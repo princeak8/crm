@@ -6,9 +6,29 @@ import { SaveProspectPayload } from "../types/requests/prospect";
 class ProspectService {
     Prospect = prisma.prospect;
 
-    async save(data: SaveProspectPayload) {
+    async save(data: SaveProspectPayload, employee_id: number) {
         return await this.Prospect.create({
-            data
+            data: {
+                ...data,
+                employees: {
+                    create: [
+                        {
+                            employee: {
+                                connect: {
+                                    id: employee_id
+                                }
+                            }
+                        }
+                    ]
+                }
+            },
+            include: {
+                employees:  {
+                    include: {
+                        employee: true
+                    }
+                }
+            }
         });
     }
 
